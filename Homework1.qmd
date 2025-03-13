@@ -55,20 +55,23 @@ One other thing I want to point out about coded portions of the assignment has t
 #| echo: true
 
 # Your code goes here. Create an object called 'df'
-
+df <- tibble(
+  time = seq(2000, 2020, by = 1),
+  population = rnorm(21, mean = 5000, sd = 100)
+)
 
 # The code below visualizes it.
-# df |>                                 # begin uncomment         
-#   ggplot() +
-#   geom_line(
-#     aes(
-#       x = time,
-#       y = population)) +
-#   scale_x_continuous(
-#     limits = c(2000,2020),
-#     expand = expansion(mult = 0),
-#     breaks = seq(2000,2020,5)) +
-#   theme_minimal()                     # end uncomment
+df |>
+  ggplot() +
+  geom_line(
+    aes(
+      x = time,
+      y = population)) +
+  scale_x_continuous(
+    limits = c(2000,2020),
+    expand = expansion(mult = 0),
+    breaks = seq(2000,2020,5)) +
+  theme_minimal()                  
 ```
 
 The code in lines 5 through 15 above would generate an error if the object `df` doesn't exist or is created in a way that the variables `time` and `population` don't exist to be plotted for the years 2000 to 2020. To quickly comment/uncomment multiple lines of code you can use the keyboard shortcut `Ctrl+Shift+C` or follow the menu path `Code > Comment/Uncomment Lines`.
@@ -124,9 +127,9 @@ Use what we learned about slicing different types of objects to pull the regress
 #| echo: true
 
 # Your code for getting coefficient estimates from model1 goes below
-
+coef(model1)
 # Your code for getting coefficient estimates from model1_summary goes below
-```
+model1_summary$coefficients
 
 ::: callout-tip
 ## Tip: Play Before You Commit
@@ -142,17 +145,17 @@ When using a model to predict outcomes, we want to evaluate how well it fits. In
 #| echo: true
 
 # Calculate the mean of yvals using the mean function, call it 'yvm'
-
+ymd <- df1$yvals[1] - yvm
 # Calculate the difference b/t the first obs. of yvals and yvm,
 # call it 'ymd'
-
+ymd <- df1$yvals[1] - yvm
 # Calculate the difference b/t the first obs. of fitted.values
 # and yvm, call it 'yfd'
-
+yfd <- model1$fitted.values[1] - yvm
 # Divide yfd by ymd. This is the % of the variation between yvm and
 # the first obs. of yvals that is explained by model1. Don't use the
 # assignment operator in this one.
-
+yfd / ymd
 ```
 
 In practice, we want to calculate a similar value for the whole model. This involves summing up the differences we talked about above. However, before adding the differences together, we square them so that observations with similar differences but opposite signs (think 3 and -3) don't cancel each other out. The ratio for the whole model is $R^2$ and in this model, with this data, is `r round(x=model1_summary$r.squared,digit=3)`. Change the `eval` option of the code chunk below to `true` to show how this is calculated.
