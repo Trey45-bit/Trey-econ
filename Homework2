@@ -161,10 +161,17 @@ The code chunk below creates a tibble with each of the values of $X$ and their a
 # This code creates the data set with outcomes & probabilities
 binom_dist_n10_p67 <- tibble(x=0:20,x_prob=dbinom(x,size=20,prob=2/3))
 
-# Put your code to calculate expected value below this comment
+# Expected value E[X] = sum(x * P(x))
+expected_value <- binom_dist_n10_p67 %>%
+  summarise(E_X = sum(x * x_prob)) %>%
+  pull(E_X)
 
-# Put your code to calculate variance below this comment
-```
+
+# Variance Var(X) = E[X^2] - (E[X])^2
+variance <- binom_dist_n10_p67 %>%
+  summarise(E_X2 = sum(x^2 * x_prob)) %>%
+  mutate(Var_X = E_X2 - expected_value^2) %>%
+  pull(Var_X)
 
 ::: callout-tip
 ## Tip: Expected Value & Variance of Discrete Variables
@@ -205,14 +212,12 @@ which doesn't have a simple integration strategy to solve. In any case, it turns
 # Setting the psuedo-RNG seed will lead to consistent results.
 set.seed(1234)
 
-# Start by creating a tibble with a variable called x, and use
-# rnorm to generate a lot (maybe a million) random draws of x.
+approx_conditional_exp <- tibble(x = rnorm(1e6)) %>%
+  filter(x < 0) %>%
+  summarise(expected_x_given_neg = mean(x)) %>%
+  pull(expected_x_given_neg)
 
-
-# filter this tibble to keep only negative numbers
-
-
-# calculate the sample mean (i.e. expected value)
+approx_conditional_exp
 
 ```
 
@@ -287,11 +292,9 @@ rv_sine_tbl |>
 Our random sample clearly follows our made up sine distribution. Now, we can work towards checking that the CLT applies in this instance, as it does in so many others. In order for the normal distribution to emerge, we first need to calculate sample means. In the code chunk below, use `group_by`, `summarise`, and `mean` to calculate the sample means.
 
 ```{r}
-#| echo: true
-
-# Calculate the sample means and assign the results to a tibble called
-# rv_means. In dplyr::summarise, call your summary variable "sample_mean"
-# rv_means <- rv_sine_tbl |>
+rv_means <- rv_sine_tbl |>
+  group_by(grp) |>
+  summarise(sample_mean = mean(x), .groups = "drop")
 
 ```
 
@@ -304,11 +307,8 @@ $$
 where $\bar{X}$ is our sample mean, $\mu$ is the expected value of our original distribution, $\sigma$ is the standard deviation of our original distribution, and $n$ is the size of the sample for which we're computing the sample mean. In the code chunk below, use `mutate` to calculate the centered and rescaled sample means.
 
 ```{r}
-#| echo: true
-
-# Calculate the centered and rescaled sample means. Call this new
-# variable "normed_xbar".
-# rv_means <- rv_means |>
+rv_means <- rv_means |>
+  mutate(normed_xbar = sqrt(100) * (sample_mean - 0.5) / sqrt(0.25 - 2 / pi^2))
 
 ```
 
@@ -320,14 +320,15 @@ Now that you've "normalized" the sample means, they will be distributed accordin
 
 rv_means |> ggplot() +
   geom_histogram(
-    aes(x=normalized_x,y=after_stat(density)),
-    binwidth = 0.1,color="grey") +
+    aes(x=normed_xbar, y=after_stat(density)),
+    binwidth = 0.1, color="grey") +
   stat_function(
-    fun=~dnorm(.),xlim=c(-4,4),
-    color="blue",linewidth=1) +
+    fun=~dnorm(.), xlim=c(-4,4),
+    color="blue", linewidth=1) +
   annotate(
-    geom="text",x=1.5,y=0.3,
-    label="Standard Normal\nPDF",color="blue") +
-  labs(x=expression(Normalized~bar(X)),y="Density") +
+    geom="text", x=1.5, y=0.3,
+    label="Standard Normal\nPDF", color="blue") +
+  labs(x=expression(Normalized~bar(X)), y="Density") +
   theme_classic()
+
 ```
