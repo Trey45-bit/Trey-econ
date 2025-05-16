@@ -107,13 +107,17 @@ In the code chunk below use the `union`, `intersect`, and `setdiff` functions fr
 #| echo: true
 
 # What characters are in *all* three of the prequel trilogy of films
-
+prequel_all <- reduce(list(TPM, AotC, RotS), intersect)
+prequel_all
 # What characters are in both Return of the Jedi and The Force Awakens
-
+rotj_tfa_both <- intersect(RotJ, TFA)
+rotj_tfa_both
 # What characters are in The Empire Strikes Back but *NOT* A New Hope
-
+esb_not_anh <- setdiff(ESB, ANH)
+esb_not_anh
 # Extra Credit: What character is in all of the films in the data set
-```
+all_films <- reduce(list(TPM, AotC, RotS, ANH, ESB, RotJ, TFA), intersect)
+all_films
 
 ## Exercise 2 - Expectation & Variance
 
